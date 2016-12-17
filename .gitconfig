@@ -1,0 +1,61 @@
+[core]
+	editor = vim
+	symlinks = true
+[push]
+	default = current
+[alias]
+    # General
+    ci = commit
+    br = branch
+    co = checkout
+    fepu = !git fetch && git pull --rebase
+    unstage = reset HEAD --
+    add-unmerged = "!f() { git diff --name-only --diff-filter=U | cut -f2 ; }; git add `f`"
+    # new = !sh -c 'git log $1@{1}..$1@{0} "$@"'
+    # whatis = show -s --pretty='tformat:%h (%s, %ad)' --date=short
+
+    # Diff
+    df = diff
+    dc = diff --cached
+    changes = diff --name-status -r
+    diffstat = diff --stat -r
+    # It needs https://github.com/so-fancy/diff-so-fancy
+    dsf = "!f() { [ -z \"$GIT_PREFIX\" ] || cd \"$GIT_PREFIX\" && git diff --color \"$@\" | diff-so-fancy  | less --tabs=4 -RFX; }; f"
+
+    # Review
+    review = !git dsf $1 -- $(git dsf --name-only $1 | grep -v tests | grep -v migrations)
+    review-against = !git log -p HEAD --reverse --not $1
+
+    # Log
+    lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
+    lgo = !git log --oneline --graph
+    lgp = log -p
+    last = log -1 HEAD
+    introduced = "!f() { git log -S $1 --source --all; }; f"
+
+    # Users/contributors
+    authors = !git log --format='%aN' | sort -u
+    who = shortlog -s --
+    whois = "!sh -c 'git log -i -1 --pretty=\"format:%an <%ae>\n\" --author=\"$1\"' -"
+
+    # Visual
+    visual = !gitk
+    k = !gitk
+
+    # Edit files
+    edit-modified = "!f() { vim -p `git diff --name-only --diff-filter=M` ; }; f"
+    edit-unmerged = "!f() { vim -p `git diff --name-only --diff-filter=U` ; }; f"
+    edit-status = "!f() { vim -p $(git status --ignore-submodules --porcelain | grep -v '^[[:space:]]*D ' | awk '{print $2}') ; }; f"
+    edit-new = "!f() { vim -p $(git status --ignore-submodules --porcelain | grep '^?? ' | awk '{print $2}') ; }; f"
+
+    # Rebasing
+    num-commits-from = "!f() { git rev-list --count HEAD ^$1; }; f"
+    rebase-from = "!f() { git rebase -i HEAD~`git num-commits-from $1`; }; f"
+    rebase-from-dev = "!f() { git rebase-from development; }; f"
+
+    # Stash
+    stash-as = "!f() { git stash save $1; }; f"
+    stash-show-as = "!f() { git stash show stash^{/$*} -p; }; f"
+    stash-apply-as = "!f() { git stash apply stash^{/$*}; }; f"
+    stash-pop-as = "!f() { git stash pop stash^{/$*}; }; f"
+    stash-drop-as = "!f() { git stash drop stash^{/$*}; }; f"
