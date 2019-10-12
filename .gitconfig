@@ -1,18 +1,25 @@
 [core]
-	editor = vim
-	symlinks = true
+    editor = vim
 [push]
-	default = current
+    default = current
+[rerere]
+    enabled = true
 [alias]
     # General
     ci = commit
-    br = branch
     co = checkout
     fepu = !git fetch && git pull --rebase
     unstage = reset HEAD --
     add-unmerged = "!f() { git diff --name-only --diff-filter=U | cut -f2 ; }; git add `f`"
+    codediff = !git diff $1 -- $(git diff --name-only $1 | grep -v test | grep -v migrations)
     # new = !sh -c 'git log $1@{1}..$1@{0} "$@"'
     # whatis = show -s --pretty='tformat:%h (%s, %ad)' --date=short
+
+    # Branch
+    br = branch
+    local-branches = !git branch -vv | cut -c 3- | awk '$3 !~/\\[/ { print $1 }'
+    not-merged = !git branch --no-merged development | cut -c 3-
+    branch-who = "!f() { git for-each-ref --format='%(committerdate) %09 %(authorname) %09 %(refname)' | sort -k5n -k2M -k3n -k4n; }; f"
 
     # Diff
     df = diff
@@ -20,6 +27,7 @@
     changes = diff --name-status -r
     diffstat = diff --stat -r
     # It needs https://github.com/so-fancy/diff-so-fancy
+	fancydiff = "!f() { [ -z \"$GIT_PREFIX\" ] || cd \"$GIT_PREFIX\" && git diff --color \"$@\" | diff-so-fancy  | less --tabs=4 -RFX; }; f"
     dsf = "!f() { [ -z \"$GIT_PREFIX\" ] || cd \"$GIT_PREFIX\" && git diff --color \"$@\" | diff-so-fancy  | less --tabs=4 -RFX; }; f"
 
     # Review
@@ -43,15 +51,19 @@
     k = !gitk
 
     # Edit files
+    edit-diff-master = "!f() { vim -p `git diff master --name-only` ; }; f"
     edit-modified = "!f() { vim -p `git diff --name-only --diff-filter=M` ; }; f"
     edit-unmerged = "!f() { vim -p `git diff --name-only --diff-filter=U` ; }; f"
+    edit-untracked = "!f() { vim -p `git ls-files -o --exclude-standard` ; }; f"
     edit-status = "!f() { vim -p $(git status --ignore-submodules --porcelain | grep -v '^[[:space:]]*D ' | awk '{print $2}') ; }; f"
-    edit-new = "!f() { vim -p $(git status --ignore-submodules --porcelain | grep '^?? ' | awk '{print $2}') ; }; f"
+    #edit-status = "!f() { vim -p $(git diff --name-only && git ls-files -o --exclude-standard) ; }; f"
+    edit-last-commit = "!f() { vim -p $(git show --name-only --format=oneline | sed -n '1!p') ; }; f"
 
     # Rebasing
     num-commits-from = "!f() { git rev-list --count HEAD ^$1; }; f"
     rebase-from = "!f() { git rebase -i HEAD~`git num-commits-from $1`; }; f"
     rebase-from-dev = "!f() { git rebase-from development; }; f"
+    amend-now = !GIT_COMMITTER_DATE="`date`" git commit --amend --date "`date`"
 
     # Stash
     stash-as = "!f() { git stash save $1; }; f"
