@@ -14,6 +14,9 @@
     codediff = !git diff $1 -- $(git diff --name-only $1 | grep -v test | grep -v migrations)
     # new = !sh -c 'git log $1@{1}..$1@{0} "$@"'
     # whatis = show -s --pretty='tformat:%h (%s, %ad)' --date=short
+    would-prune = !git remote prune origin --dry-run
+    patch = !git --no-pager diff --no-color
+    recent-tag = !git tag --sort=creatordate | tail -n 1
 
     # Branch
     br = branch
@@ -40,6 +43,7 @@
     lgp = log -p
     last = log -1 HEAD
     introduced = "!f() { git log -S $1 --source --all; }; f"
+    track-fn = "!f() { git log -L $1; }; f"
 
     # Users/contributors
     authors = !git log --format='%aN' | sort -u
@@ -62,7 +66,7 @@
     # Rebasing
     num-commits-from = "!f() { git rev-list --count HEAD ^$1; }; f"
     rebase-from = "!f() { git rebase -i HEAD~`git num-commits-from $1`; }; f"
-    rebase-from-dev = "!f() { git rebase-from development; }; f"
+    rebase-from-master = "!f() { git rebase-from master; }; f"
     amend-now = !GIT_COMMITTER_DATE="`date`" git commit --amend --date "`date`"
 
     # Stash
